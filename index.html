@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>MoneyBrain | Smart Finance Solver for EMI, NPV, IRR, EOQ, WACC, CAGR</title>
+
+  <meta name="description" content="Smart Finance Solver that automatically detects financial problems such as EMI, Interest Rate, NPV, IRR, EOQ, WACC, CAGR, Inventory Levels, Future Value and provides instant step-by-step solutions.">
+  <meta name="keywords" content="finance calculator, EMI calculator, interest rate calculator, NPV calculator, IRR calculator, EOQ, WACC, CAGR, future value, investment calculator, break-even analysis, business calculator">
+  <meta name="robots" content="index, follow">
+  <meta name="author" content="Akshay">
+
+  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/783/783696.png" />
+
+  <meta property="og:title" content="Smart Finance Solver" />
+  <meta property="og:description" content="Paste any finance question—EMI, IRR, NPV, EOQ, WACC, CAGR—and get instant answers." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://cdn-icons-png.flaticon.com/512/783/783696.png" />
+
+  <style>
+    :root{--bg:#0b1220;--panel:#10192b;--ink:#eef3ff;--muted:#a9b3c7;--accent:#6aa1ff;--ok:#3ecf8e;--warn:#ffb545;--bad:#ff6b6b}
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,#0b1220 0%,#0a1020 70%);color:var(--ink);font: 14px/1.45 system-ui,Segoe UI,Roboto}
+    .wrap{max-width:1100px;margin:40px auto;padding:0 16px}
+    .card{background:var(--panel);border:1px solid #1c2742;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    textarea{width:100%;min-height:150px;background:#0b1326;color:var(--ink);border:1px solid #1b2742;border-radius:12px;padding:14px}
+    button{border:0;border-radius:12px;padding:12px 16px;background:var(--accent);color:#071023;font-weight:700;cursor:pointer}
+    button.secondary{background:#18274a;color:var(--ink);border:1px solid #273a68}
+    .pill{padding:6px 14px;border-radius:999px;background:#111a31;border:1px solid #1f2e54;color:var(--muted);font-size:12px;display:inline-block}
+    .result{white-space:pre-wrap;background:#0a152e;border:1px dashed #1e356a;border-radius:12px;padding:14px;margin-top:14px}
+    .kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:18px}
+    .kpi > div{background:#0e1a36;border:1px solid #20366e;border-radius:14px;padding:12px}
+    .kpi h4{margin:0 0 6px;font-size:12px;color:var(--muted)}
+    .kpi span{font-size:18px;font-weight:800}
+    details{background:#0f1a34;border:1px solid #1f2f56;border-radius:12px;padding:12px;margin-top:16px}
+    summary{cursor:pointer;font-weight:700;font-size:14px}
+    a.sample{color:#9fc2ff;text-decoration:none;border-bottom:1px dotted #3a66c7;cursor:pointer}
+    @media(max-width:600px){button{width:100%}}
+  </style>
+</head>
+<body>
+
+<div class="wrap">
+  <h1>Smart Finance Solver</h1>
+  <p style="color:var(--muted)">Paste any finance question — EMI, IRR, NPV, EOQ, WACC, CAGR, Break-even, Inventory Levels — and get instant answers.</p>
+
+  <div class="card" style="padding:16px;">
+    <label class="pill">Enter Question</label>
+    <textarea id="q" placeholder="Paste your question here..."></textarea>
+
+    <div class="row" style="margin-top:10px;">
+      <button id="solveBtn">Solve</button>
+      <button id="clearBtn" class="secondary">Clear</button>
+      <span class="pill" id="detected">Detected: –</span>
+    </div>
+
+    <div id="kpi" class="kpi" style="display:none"></div>
+    <div id="out" class="result"></div>
+  </div>
+
+  <details>
+    <summary>Sample Questions</summary>
+    <div style="padding-top:8px;display:grid;gap:8px">
+      <a class="sample" data-text="A person has borrowed Rs. 1000 to be repaid in 12 monthly instalments of Rs. 94.56. Compute the annual interest rate.">EMI Rate</a>
+      <a class="sample" data-text="An investor deposits Rs. 1000000 for 5 years at 8% p.a. compounded quarterly. What is the maturity amount?">Future Value</a>
+      <a class="sample" data-text="A company wants to retire a loan of Rs. 500000 in 10 years. Funds earn 8% p.a. equal deposits at the beginning of each year. What deposit is required?">Sinking Fund</a>
+      <a class="sample" data-text="Given selling price 20, variable cost 14, fixed cost 540000. Compute break-even point.">Break-even</a>
+      <a class="sample" data-text="Demand 4800 units, order cost 800, carrying cost 25% of price 100. Find EOQ.">EOQ</a>
+      <a class="sample" data-text="Cash flows: -200000, 60000, 80000, 100000. Discount rate 10%. Compute NPV and IRR.">NPV IRR</a>
+    </div>
+  </details>
+
+  <p style="opacity:.7;margin-top:14px">© 2025 Smart Finance Solver. All Rights Reserved.</p>
+</div>
+
+<script>
+// ---------- Utilities ----------
+const asFloat=(x)=>parseFloat(String(x).replace(/,/g,""));
+const pct=(x)=>(x*100).toFixed(2)+"%";
+const money=(x)=>"₹"+Number(x).toLocaleString(undefined,{maximumFractionDigits:2});
+
+// ---------- Topic Detector ----------
+function detectTopic(t){
+  t=t.toLowerCase();
+  if(/emi|monthly instal|interest rate/i.test(t)) return 'RATE_FROM_EMI';
+  if(/compound|future value|maturity/i.test(t)) return 'FV';
+  if(/sinking fund|retire a loan|annuity/i.test(t)) return 'SINKING';
+  if(/break-even|bep|fixed cost/i.test(t)) return 'BEP';
+  if(/eoq|order cost|carrying cost/i.test(t)) return 'EOQ';
+  if(/wacc/i.test(t)) return 'WACC';
+  if(/cagr|growth/i.test(t)) return 'CAGR';
+  if(/reorder level|min level|max level|inventory/i.test(t)) return 'INVENTORY';
+  if(/npv|irr|cash flow/i.test(t)) return 'NPV_IRR';
+  return 'UNKNOWN';
+}
+
+// ---------- Extraction ----------
+function extractNumbers(t){
+  return [...t.matchAll(/[-+]?\d*\.?\d+/g)].map(m=>asFloat(m[0]));
+}
+
+// ---------- Bisection ----------
+function bisection(f,lo,hi){
+  let f1=f(lo),f2=f(hi);
+  for(let i=0;i<200;i++){
+    let mid=(lo+hi)/2, fm=f(mid);
+    if(Math.abs(fm)<1e-10) return mid;
+    if(f1*fm<0){hi=mid;f2=fm;} else {lo=mid;f1=fm;}
+  }
+  return (lo+hi)/2;
+}
+
+// ---------- EMI Rate ----------
+function solveRateFromEMI(t){
+  const nums=extractNumbers(t);
+  const P=nums[0], EMI=nums[1], n=nums[2];
+  const f=(r)=>P*r/(1-Math.pow(1+r,-n))-EMI;
+  const r=bisection(f,0.00001,1);
+  const annual=Math.pow(1+r,12)-1;
+
+  return {
+    kpi:[
+      ["Loan Amount",money(P)],
+      ["EMI",money(EMI)],
+      ["Months",n],
+      ["Monthly Rate",pct(r)],
+      ["Annual Effective",pct(annual)]
+    ],
+    text:"EMI rate calculated using bisection method."
+  };
+}
+
+// ---------- Future Value ----------
+function solveFV(t){
+  const nums=extractNumbers(t);
+  const PV=nums[0], years=nums[1], r=nums[2]/100;
+  const FV=PV*Math.pow(1+r,years);
+
+  return {
+    kpi:[
+      ["Principal",money(PV)],
+      ["Rate",pct(r)],
+      ["Years",years],
+      ["Future Value",money(FV)]
+    ],
+    text:"FV = PV (1+r)^n"
+  };
+}
+
+// ---------- Sinking Fund ----------
+function solveSinking(t){
+  const nums=extractNumbers(t);
+  const FV=nums[0], years=nums[1], r=nums[2]/100;
+  const PMT=FV*(r/((Math.pow(1+r,years)-1)));
+
+  return {
+    kpi:[
+      ["Target",money(FV)],
+      ["Years",years],
+      ["Rate",pct(r)],
+      ["Yearly Deposit",money(PMT)]
+    ],
+    text:"Sinking fund using future value of annuity formula."
+  };
+}
+
+// ---------- Break-even ----------
+function solveBEP(t){
+  const nums=extractNumbers(t);
+  const S=nums[0], V=nums[1], F=nums[2];
+  const C=S-V, BEP=F/C;
+
+  return {
+    kpi:[
+      ["Selling Price",money(S)],
+      ["Variable Cost",money(V)],
+      ["Contribution",money(C)],
+      ["Fixed Cost",money(F)],
+      ["Break-even Units",BEP.toFixed(0)]
+    ],
+    text:"BEP = Fixed Cost / Contribution"
+  };
+}
+
+// ---------- EOQ ----------
+function solveEOQ(t){
+  const nums=extractNumbers(t);
+  const D=nums[0], Co=nums[1], Ch=nums[2];
+  const Q=Math.sqrt((2*D*Co)/Ch);
+
+  return {
+    kpi:[
+      ["Demand",D],
+      ["Order Cost",money(Co)],
+      ["Carrying Cost",money(Ch)],
+      ["EOQ",Q.toFixed(0)]
+    ],
+    text:"EOQ = √(2DC/Ch)"
+  };
+}
+
+// ---------- NPV / IRR ----------
+function solveNPVIRR(t){
+  const flows=t.match(/-?\d[\d,]*/g).map(x=>asFloat(x));
+  const rate=/(\d+)%/.exec(t); const r=rate?parseFloat(rate[1])/100:0.1;
+
+  const npv=flows.reduce((a,c,i)=>a+c/Math.pow(1+r,i),0);
+
+  const f=(x)=>flows.reduce((a,c,i)=>a+c/Math.pow(1+x,i),0);
+  let irr=null; try{irr=bisection(f,-0.9,1);}catch(e){}
+
+  return {
+    kpi:[
+      ["Discount Rate",pct(r)],
+      ["NPV",money(npv)],
+      ["IRR", irr?pct(irr):"–"]
+    ],
+    text:"NPV & IRR calculated from cash flow stream."
+  };
+}
+
+// ---------- CAGR ----------
+function solveCAGR(t){
+  const nums=extractNumbers(t);
+  const PV=nums[0], FV=nums[1], years=nums[2];
+  const g=Math.pow(FV/PV,1/years)-1;
+
+  return {
+    kpi:[
+      ["Start",money(PV)],
+      ["End",money(FV)],
+      ["Years",years],
+      ["CAGR",pct(g)]
+    ],
+    text:"CAGR = (FV/PV)^(1/n)-1"
+  };
+}
+
+// ---------- Inventory ----------
+function solveInventory(t){
+  const nums=extractNumbers(t);
+  const maxU=nums[0], minU=nums[1], normalU=nums[2], lead=nums[3], ROQ=nums[4];
+
+  const reorder=maxU*lead;
+  const minLevel=reorder - normalU*(lead/2);
+  const maxLevel=reorder - minU + ROQ;
+  const avg=minLevel + ROQ/2;
+
+  return {
+    kpi:[
+      ["Reorder Level",reorder],
+      ["Min Level",minLevel],
+      ["Max Level",maxLevel],
+      ["Avg Level",avg]
+    ],
+    text:"Inventory levels based on usage & lead time."
+  };
+}
+
+// ---------- RENDER ----------
+function render(res){
+  const box=document.getElementById("kpi");
+  box.innerHTML="";
+  if(res.kpi){
+    box.style.display="grid";
+    res.kpi.forEach(([k,v])=>{
+      const d=document.createElement("div");
+      d.innerHTML=`<h4>${k}</h4><span>${v}</span>`;
+      box.appendChild(d);
+    });
+  }
+  document.getElementById("out").textContent=res.text;
+}
+
+// ---------- MAIN ----------
+document.getElementById("solveBtn").onclick=()=>{
+  const t=document.getElementById("q").value;
+  const topic=detectTopic(t);
+  document.getElementById("detected").textContent="Detected: "+topic;
+
+  let res={text:"Could not detect problem. Try adding keywords."};
+
+  if(topic==='RATE_FROM_EMI') res=solveRateFromEMI(t);
+  else if(topic==='FV') res=solveFV(t);
+  else if(topic==='SINKING') res=solveSinking(t);
+  else if(topic==='BEP') res=solveBEP(t);
+  else if(topic==='EOQ') res=solveEOQ(t);
+  else if(topic==='NPV_IRR') res=solveNPVIRR(t);
+  else if(topic==='CAGR') res=solveCAGR(t);
+  else if(topic==='INVENTORY') res=solveInventory(t);
+
+  render(res);
+};
+
+document.getElementById("clearBtn").onclick=()=>{
+  document.getElementById("q").value="";
+  document.getElementById("out").textContent="";
+  document.getElementById("kpi").style.display="none";
+  document.getElementById("detected").textContent="Detected: –";
+};
+
+document.querySelectorAll("a.sample").forEach(a=>{
+  a.onclick=()=>{
+    document.getElementById("q").value=a.dataset.text;
+    document.getElementById("solveBtn").click();
+  };
+});
+</script>
+
+</body>
+</html>
