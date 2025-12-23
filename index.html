@@ -3,332 +3,222 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>MoneyBrain – Smart Financial Calculator for Students</title>
-
-<meta name="description" content="MoneyBrain is a smart financial calculator for students and professionals. Solve EMI, NPV, IRR, EOQ, WACC, CAGR and investment problems using plain English input.">
-<meta name="robots" content="index, follow">
-<meta name="author" content="Akshay">
-
-<link rel="icon" href="https://cdn-icons-png.flaticon.com/512/783/783696.png">
+<title>MoneyBrain – Advanced Financial Calculator for students and employees</title>
 
 <style>
-:root{
-  --bg:#0B1220;
-  --panel:#111C36;
-  --ink:#FFFFFF;
-  --muted:#A9B3C7;
-  --accent:#3ECF8E;
-}
-
-*{box-sizing:border-box}
 body{
   margin:0;
-  background:var(--bg);
-  color:var(--ink);
-  font:14px/1.6 system-ui,Segoe UI,Roboto;
+  background:#0b1220;
+  font-family:system-ui,Segoe UI,Roboto;
+  color:#fff;
 }
 
-.wrap{
-  max-width:980px;
-  margin:32px auto;
-  padding:0 16px;
+.container{
+  max-width:1000px;
+  margin:40px auto;
+  padding:20px;
 }
 
-/* ---------- HERO ---------- */
 h1{
-  font-size:28px;
-  margin-bottom:6px;
-  font-weight:700;
-}
-
-.hero-desc{
-  font-size:14px;
-  color:var(--muted);
-  max-width:720px;
-}
-
-/* ---------- CARD ---------- */
-.card{
-  background:var(--panel);
-  border:1px solid #1e2b55;
-  border-radius:14px;
-  padding:14px;
-  margin-top:18px;
-  box-shadow:0 20px 40px rgba(0,0,0,.35);
-}
-
-label.pill{
-  display:inline-block;
-  font-size:12px;
-  color:var(--muted);
-  padding:4px 10px;
-  border:1px solid #24356a;
-  border-radius:999px;
   margin-bottom:6px;
 }
-
-textarea{
-  width:100%;
-  min-height:110px;
-  background:#0B1326;
-  border:1px solid #24356a;
-  border-radius:12px;
-  padding:12px;
-  font-size:14px;
-  color:var(--ink);
-  resize:vertical;
+.subtitle{
+  color:#a9b3c7;
+  margin-bottom:20px;
 }
 
-.actions{
+/* Tabs */
+.tabs{
   display:flex;
-  align-items:center;
-  gap:10px;
-  margin-top:10px;
-  flex-wrap:wrap;
+  gap:6px;
+}
+.tab{
+  padding:10px 16px;
+  background:#1c2b4a;
+  cursor:pointer;
+  border-radius:8px 8px 0 0;
+  font-weight:600;
+}
+.tab.active{
+  background:#2f80ed;
 }
 
-button{
-  background:var(--accent);
-  color:#062016;
-  border:0;
-  border-radius:10px;
-  padding:8px 18px;
-  font-weight:700;
+/* Panel */
+.panel{
+  background:#111c36;
+  border-radius:0 12px 12px 12px;
+  padding:20px;
+  display:grid;
+  grid-template-columns:1fr 300px;
+  gap:20px;
+}
+
+.form label{
+  display:block;
+  margin-top:12px;
   font-size:14px;
+}
+.form input{
+  width:100%;
+  padding:9px;
+  border-radius:6px;
+  border:none;
+  margin-top:4px;
+  font-size:14px;
+}
+
+/* Buttons */
+.buttons{
+  margin-top:18px;
+  display:flex;
+  gap:10px;
+}
+button{
+  padding:10px 18px;
+  border:none;
+  border-radius:8px;
+  font-weight:700;
   cursor:pointer;
 }
-
-button:hover{
-  background:#34ba7d;
-  transform:translateY(-1px);
+.calc{
+  background:#27ae60;
+  color:#000;
+}
+.clear{
+  background:#555;
+  color:#fff;
 }
 
-.status{
-  font-size:12px;
-  color:var(--muted);
-  padding:4px 10px;
-  border:1px solid #24356a;
-  border-radius:999px;
-}
-
+/* Result */
 .result{
-  margin-top:12px;
-  background:#0A152E;
-  border:1px dashed #2b458f;
+  background:#0f2d1c;
   border-radius:12px;
-  padding:12px;
-  font-size:14px;
+  padding:16px;
 }
-
-/* ---------- CONTENT ---------- */
-section{
-  margin-top:28px;
+.result h3{
+  margin-top:0;
+  color:#7cfc98;
 }
-
-section h2{
+.result .value{
   font-size:20px;
-  margin-bottom:6px;
+  font-weight:800;
 }
 
-section p, section li{
-  color:var(--muted);
-  font-size:14px;
-}
-
-ul{
-  padding-left:18px;
-}
-
-/* ---------- FOOTER ---------- */
-footer{
-  margin:36px 0 20px;
-  font-size:12px;
-  color:var(--muted);
-  opacity:.8;
-}
-
-/* ---------- MOBILE ---------- */
-@media(max-width:600px){
-  h1{font-size:24px}
+/* Mobile */
+@media(max-width:800px){
+  .panel{
+    grid-template-columns:1fr;
+  }
 }
 </style>
 </head>
 
 <body>
-<div class="wrap">
+<div class="container">
 
-<h1>Smart Financial Calculator for Students and Professionals</h1>
-<p class="hero-desc">
-Solve EMI, Interest Rate, NPV, IRR, EOQ, WACC, CAGR and investment problems using plain English input.
-</p>
+<h1>Advanced Financial Calculator</h1>
+<p class="subtitle">Time Value of Money (TVM) Calculator for Students & Professionals</p>
 
-<div class="card">
-  <label class="pill">Enter your finance question</label>
-  <textarea id="q" placeholder="Example: A person borrowed Rs. 1000 and repays Rs. 94.56 for 12 months. Find interest rate."></textarea>
-
-  <div class="actions">
-    <button onclick="solve()">Solve</button>
-    <span class="status" id="detected">Detected: –</span>
-  </div>
-
-  <div class="result" id="out">
-    Paste a finance problem and click Solve.
-  </div>
+<div class="tabs">
+  <div class="tab active" onclick="setMode('FV',this)">FV</div>
+  <div class="tab" onclick="setMode('PV',this)">PV</div>
+  <div class="tab" onclick="setMode('PMT',this)">PMT</div>
+  <div class="tab" onclick="setMode('N',this)">N</div>
+  <div class="tab" onclick="setMode('IY',this)">I/Y</div>
 </div>
 
-<section>
-<h2>What is MoneyBrain?</h2>
-<p>
-MoneyBrain is an online financial calculator built for engineering students, MBA students,
-and professionals who regularly solve numerical finance problems.
-</p>
-<p>
-It supports EMI calculation, interest rate detection, NPV, IRR, EOQ, WACC, CAGR,
-break-even analysis, inventory management, and investment decisions.
-</p>
+<div class="panel">
+  <div class="form">
+    <label>N (Number of periods)</label>
+    <input id="n" value="10">
 
-<h2>Who should use this calculator?</h2>
-<ul>
-  <li>Engineering & MBA students</li>
-  <li>Exam and interview preparation</li>
-  <li>Professionals evaluating loans and investments</li>
-  <li>Anyone learning financial management</li>
-</ul>
-</section>
+    <label>I/Y (Interest % per year)</label>
+    <input id="r" value="6">
 
-<footer>
-© 2025 MoneyBrain · Smart Financial Calculator
-</footer>
+    <label>PV (Present Value)</label>
+    <input id="pv" value="20000">
+
+    <label>PMT (Periodic Payment)</label>
+    <input id="pmt" value="-2000">
+
+    <div class="buttons">
+      <button class="calc" onclick="calculate()">Calculate</button>
+      <button class="clear" onclick="clearAll()">Clear</button>
+    </div>
+  </div>
+
+  <div class="result">
+    <h3>Results</h3>
+    <div id="resultText">—</div>
+    <div class="value" id="resultValue"></div>
+  </div>
+</div>
 
 </div>
 
 <script>
-/* ===================== HELPERS ===================== */
-function clean(n){ return n ? Number(n.replace(/,/g,"")) : null }
+let mode="FV";
 
-function loanAmount(t){
-  const m = t.match(/borrowed\s+rs\.?\s*([\d,]+)/i) ||
-            t.match(/rs\.?\s*([\d,]+)/i);
-  return m ? clean(m[1]) : null;
+function setMode(m,el){
+  mode=m;
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  el.classList.add("active");
 }
 
-function emiAmount(t){
-  const m =
-    t.match(/instalments?\s+of\s+rs\.?\s*([\d,.]+)/i) ||
-    t.match(/rs\.?\s*([\d,.]+)\s*(per month|monthly|instalment)/i);
-  return m ? clean(m[1]) : null;
-}
+function val(id){ return Number(document.getElementById(id).value) }
 
-function interestRate(t){
-  const m = t.match(/(\d+(\.\d+)?)\s*%/);
-  return m ? Number(m[1]) : null;
-}
+function calculate(){
+  const n=val("n");
+  const r=val("r")/100;
+  const pv=val("pv");
+  const pmt=val("pmt");
 
-function months(t){
-  const m = t.match(/(\d+)\s*months?/i);
-  return m ? Number(m[1]) : null;
-}
+  let res;
 
-function years(t){
-  const m = t.match(/(\d+)\s*years?/i);
-  return m ? Number(m[1]) : null;
-}
-
-/* ===================== SOLVER ===================== */
-function solve(){
-  const t = document.getElementById("q").value.toLowerCase().trim();
-  let detected = "Unable to detect problem";
-  let out = "";
-
-  if(!t){
-    return update(detected,
-      "Input is empty.\n\nExample:\nRs. 1000 repaid in 12 instalments of Rs. 94.56. Find interest rate.");
+  if(mode==="FV"){
+    res = pv*Math.pow(1+r,n) + pmt*((Math.pow(1+r,n)-1)/r);
+    show("Future Value (FV)",res);
   }
 
-  const P = loanAmount(t);
-  const EMI = emiAmount(t);
-  const R = interestRate(t);
-  const n = months(t) || (years(t) ? years(t) * 12 : null);
+  if(mode==="PV"){
+    res = (pmt*((1-Math.pow(1+r,-n))/r)) - (pv/Math.pow(1+r,n));
+    show("Present Value (PV)",res);
+  }
 
-  /* ========= CASE 1: INTEREST RATE FROM EMI ========= */
-  if (P && EMI && n && !R) {
-    detected = "Interest Rate from EMI";
+  if(mode==="PMT"){
+    res = (pv*r)/(1-Math.pow(1+r,-n));
+    show("Periodic Payment (PMT)",res);
+  }
 
-    let r = 0.01;
-    for (let i = 0; i < 4000; i++) {
-      r = r - (P * r / (1 - Math.pow(1 + r, -n)) - EMI) / P;
+  if(mode==="N"){
+    res = Math.log(pmt/(pmt-pv*r)) / Math.log(1+r);
+    show("Number of Periods (N)",res);
+  }
+
+  if(mode==="IY"){
+    let rate=0.1;
+    for(let i=0;i<1000;i++){
+      let f = pv*Math.pow(1+rate,n) + pmt*((Math.pow(1+rate,n)-1)/rate);
+      let df = pv*n*Math.pow(1+rate,n-1);
+      rate = rate - f/df;
     }
-
-    const monthly = (r * 100).toFixed(2);
-    const annual = ((Math.pow(1 + r, 12) - 1) * 100).toFixed(2);
-
-    out =
-      "STEP-BY-STEP SOLUTION (INTEREST RATE)\n\n" +
-      "Loan Amount = ₹" + P + "\n" +
-      "Monthly Instalment = ₹" + EMI + "\n" +
-      "Time = " + n + " months\n\n" +
-      "Monthly Interest Rate ≈ " + monthly + "%\n" +
-      "Annual Effective Interest Rate ≈ " + annual + "%";
-
-    return update(detected, out);
+    show("Interest Rate (I/Y)",rate*100+" %");
+    return;
   }
-
-  /* ========= CASE 2: EMI CALCULATION ========= */
-  if (P && R && n) {
-    detected = "EMI Calculation";
-
-    const r = R / 100 / 12;
-    const emi =
-      (P * r * Math.pow(1 + r, n)) /
-      (Math.pow(1 + r, n) - 1);
-
-    out =
-      "STEP-BY-STEP SOLUTION (EMI)\n\n" +
-      "Loan Amount = ₹" + P.toLocaleString() + "\n" +
-      "Interest Rate = " + R + "% p.a.\n" +
-      "Time = " + n + " months\n\n" +
-      "EMI ≈ ₹" + emi.toFixed(0);
-
-    return update(detected, out);
-  }
-
-  /* ========= GUIDED ERROR ========= */
-  detected = "EMI / Interest Rate Problem";
-  out =
-    "Unable to extract required values.\n\n" +
-    "Please ensure your question includes:\n" +
-    "• Loan amount (Rs)\n" +
-    "• EMI OR Interest rate\n" +
-    "• Time (months or years)\n\n" +
-    "Examples:\n" +
-    "1) Rs. 1000 repaid in 12 instalments of Rs. 94.56. Find interest rate.\n" +
-    "2) Rs. 5,00,000 loan for 5 years at 10%. Find EMI.";
-
-  update(detected, out);
 }
 
-function update(d,o){
-  document.getElementById("detected").textContent = "Detected: " + d;
-  document.getElementById("out").textContent = o;
+function show(label,value){
+  document.getElementById("resultText").innerText=label;
+  document.getElementById("resultValue").innerText=
+    (typeof value==="number") ? "₹ "+value.toFixed(2) : value;
+}
+
+function clearAll(){
+  ["n","r","pv","pmt"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("resultText").innerText="—";
+  document.getElementById("resultValue").innerText="";
 }
 </script>
 
-
-
-
-
-
-
-
-
 </body>
 </html>
-
-
-
-
-
-
-
-
