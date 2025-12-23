@@ -204,81 +204,61 @@ break-even analysis, inventory management, and investment decisions.
 </div>
 
 <script>
+function extractNumbers(text) {
+  return text.match(/[\d,.]+/g)?.map(x => Number(x.replace(/,/g, ""))) || [];
+}
+
 function solve() {
   const text = document.getElementById("q").value.toLowerCase();
-  let detected = "Unable to detect problem";
-  let output = "Unable to detect problem. Please include keywords like EMI, NPV, IRR, EOQ.";
+  const nums = extractNumbers(text);
 
-  // ---------- EMI / INTEREST RATE ----------
+  let detected = "Unable to detect problem";
+  let output = "Unable to detect problem.";
+
+  /* ========== EMI CALCULATION ========== */
   if (
     text.includes("emi") ||
-    text.includes("monthly instalment") ||
-    text.includes("monthly installment") ||
-    text.includes("instalments") ||
-    text.includes("repaid in") ||
-    (text.includes("borrowed") && text.includes("months"))
+    text.includes("monthly") ||
+    text.includes("instalment") ||
+    text.includes("installment")
   ) {
     detected = "EMI / Interest Rate Problem";
-    output =
-      "Detected EMI / Interest Rate problem.\n\n" +
-      "This type of problem is solved using the EMI formula:\n" +
-      "EMI = P × r / (1 − (1 + r)^−n)\n\n" +
-      "Where:\n" +
-      "P = Loan amount\n" +
-      "r = Monthly interest rate\n" +
-      "n = Number of instalments\n\n" +
-      "The interest rate is found by trial-and-error or numerical methods.\n" +
-      "Correct Answer for this question:\n" +
-      "• Monthly interest rate ≈ 2%\n" +
-      "• Annual effective interest rate ≈ 26.82%";
+
+    if (nums.length >= 3 && text.includes("year")) {
+      const P = nums[0];          // Loan
+      const rate = nums[2] / 100; // Annual rate
+      const n = nums[1] * 12;     // Years → months
+      const r = rate / 12;
+
+      const emi =
+        (P * r * Math.pow(1 + r, n)) /
+        (Math.pow(1 + r, n) - 1);
+
+      output =
+        "Detected EMI problem.\n\n" +
+        "Loan Amount (P): ₹" + P.toLocaleString() + "\n" +
+        "Annual Interest Rate: " + nums[2] + "%\n" +
+        "Tenure: " + nums[1] + " years (" + n + " months)\n\n" +
+        "EMI Formula:\n" +
+        "EMI = P × r × (1+r)^n / ((1+r)^n − 1)\n\n" +
+        "Calculated EMI:\n" +
+        "➡ EMI ≈ ₹" + emi.toFixed(0);
+    } else {
+      output =
+        "EMI problem detected, but unable to extract all values.\n" +
+        "Please mention loan amount, interest rate, and time clearly.";
+    }
   }
 
-  // ---------- NPV ----------
-  else if (text.includes("npv") || text.includes("net present value")) {
-    detected = "NPV Problem";
-    output =
-      "Detected NPV problem.\n\n" +
-      "NPV = Σ (Cash Flow / (1 + r)^t)\n\n" +
-      "Decision rule:\n" +
-      "• NPV > 0 → Accept project\n" +
-      "• NPV < 0 → Reject project";
-  }
-
-  // ---------- IRR ----------
-  else if (text.includes("irr") || text.includes("internal rate")) {
-    detected = "IRR Problem";
-    output =
-      "Detected IRR problem.\n\n" +
-      "IRR is the discount rate at which NPV = 0.\n" +
-      "It is found using trial-and-error or interpolation.";
-  }
-
-  // ---------- EOQ ----------
-  else if (text.includes("eoq") || text.includes("economic order")) {
-    detected = "EOQ Problem";
-    output =
-      "Detected EOQ problem.\n\n" +
-      "EOQ = √(2DC / H)\n\n" +
-      "Where:\n" +
-      "D = Annual demand\n" +
-      "C = Ordering cost\n" +
-      "H = Holding cost";
-  }
-
-  // ---------- CAGR ----------
-  else if (text.includes("cagr") || text.includes("growth rate")) {
-    detected = "CAGR Problem";
-    output =
-      "Detected CAGR problem.\n\n" +
-      "CAGR = (Final Value / Initial Value)^(1/n) − 1";
-  }
-
-  document.getElementById("detected").textContent = "Detected: " + detected;
+  document.getElementById("detected").textContent =
+    "Detected: " + detected;
   document.getElementById("out").textContent = output;
 }
 </script>
 
 
+
 </body>
 </html>
+
 
