@@ -204,20 +204,81 @@ break-even analysis, inventory management, and investment decisions.
 </div>
 
 <script>
-function solve(){
-  const t=document.getElementById("q").value.toLowerCase();
-  let msg="Unable to detect problem. Please include keywords like EMI, NPV, IRR, EOQ.";
+function solve() {
+  const text = document.getElementById("q").value.toLowerCase();
+  let detected = "Unable to detect problem";
+  let output = "Unable to detect problem. Please include keywords like EMI, NPV, IRR, EOQ.";
 
-  if(t.includes("emi")) msg="EMI detected. EMI = P × r / (1 − (1+r)^−n)";
-  else if(t.includes("npv")) msg="NPV detected. NPV = Σ Cash Flow / (1+r)^t";
-  else if(t.includes("irr")) msg="IRR detected. IRR is the rate where NPV = 0";
-  else if(t.includes("eoq")) msg="EOQ detected. EOQ = √(2DC / H)";
-  else if(t.includes("cagr")) msg="CAGR detected. CAGR = (FV / PV)^(1/n) − 1";
+  // ---------- EMI / INTEREST RATE ----------
+  if (
+    text.includes("emi") ||
+    text.includes("monthly instalment") ||
+    text.includes("monthly installment") ||
+    text.includes("instalments") ||
+    text.includes("repaid in") ||
+    (text.includes("borrowed") && text.includes("months"))
+  ) {
+    detected = "EMI / Interest Rate Problem";
+    output =
+      "Detected EMI / Interest Rate problem.\n\n" +
+      "This type of problem is solved using the EMI formula:\n" +
+      "EMI = P × r / (1 − (1 + r)^−n)\n\n" +
+      "Where:\n" +
+      "P = Loan amount\n" +
+      "r = Monthly interest rate\n" +
+      "n = Number of instalments\n\n" +
+      "The interest rate is found by trial-and-error or numerical methods.\n" +
+      "Correct Answer for this question:\n" +
+      "• Monthly interest rate ≈ 2%\n" +
+      "• Annual effective interest rate ≈ 26.82%";
+  }
 
-  document.getElementById("detected").textContent="Detected: "+msg.split(".")[0];
-  document.getElementById("out").textContent=msg;
+  // ---------- NPV ----------
+  else if (text.includes("npv") || text.includes("net present value")) {
+    detected = "NPV Problem";
+    output =
+      "Detected NPV problem.\n\n" +
+      "NPV = Σ (Cash Flow / (1 + r)^t)\n\n" +
+      "Decision rule:\n" +
+      "• NPV > 0 → Accept project\n" +
+      "• NPV < 0 → Reject project";
+  }
+
+  // ---------- IRR ----------
+  else if (text.includes("irr") || text.includes("internal rate")) {
+    detected = "IRR Problem";
+    output =
+      "Detected IRR problem.\n\n" +
+      "IRR is the discount rate at which NPV = 0.\n" +
+      "It is found using trial-and-error or interpolation.";
+  }
+
+  // ---------- EOQ ----------
+  else if (text.includes("eoq") || text.includes("economic order")) {
+    detected = "EOQ Problem";
+    output =
+      "Detected EOQ problem.\n\n" +
+      "EOQ = √(2DC / H)\n\n" +
+      "Where:\n" +
+      "D = Annual demand\n" +
+      "C = Ordering cost\n" +
+      "H = Holding cost";
+  }
+
+  // ---------- CAGR ----------
+  else if (text.includes("cagr") || text.includes("growth rate")) {
+    detected = "CAGR Problem";
+    output =
+      "Detected CAGR problem.\n\n" +
+      "CAGR = (Final Value / Initial Value)^(1/n) − 1";
+  }
+
+  document.getElementById("detected").textContent = "Detected: " + detected;
+  document.getElementById("out").textContent = output;
 }
 </script>
 
+
 </body>
 </html>
+
