@@ -1,132 +1,221 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- SEO TITLE -->
-  <title>MoneyBrain – Smart Financial Calculator for Students & Professionals</title>
+<title>MoneyBrain – Smart Financial Calculator for Students</title>
 
-  <!-- SEO META -->
-  <meta name="description" content="MoneyBrain is a smart financial calculator for students and professionals. Solve EMI, Interest Rate, NPV, IRR, EOQ, WACC, CAGR, Break-even, Inventory and Investment problems instantly." />
-  <meta name="keywords" content="financial calculator for students, EMI calculator, NPV calculator, IRR calculator, EOQ, WACC, CAGR, finance solver, investment calculator" />
-  <meta name="robots" content="index, follow" />
-  <meta name="author" content="Akshay" />
+<meta name="description" content="MoneyBrain is a smart financial calculator for students and professionals. Solve EMI, NPV, IRR, EOQ, WACC, CAGR and investment problems using plain English input.">
+<meta name="robots" content="index, follow">
+<meta name="author" content="Akshay">
 
-  <!-- OPEN GRAPH -->
-  <meta property="og:title" content="MoneyBrain – Smart Financial Calculator" />
-  <meta property="og:description" content="Paste any finance question and get instant solutions for EMI, NPV, IRR, EOQ, WACC, CAGR and more." />
-  <meta property="og:type" content="website" />
-  <meta property="og:image" content="https://cdn-icons-png.flaticon.com/512/783/783696.png" />
+<link rel="icon" href="https://cdn-icons-png.flaticon.com/512/783/783696.png">
 
-  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/783/783696.png" />
+<style>
+:root{
+  --bg:#0B1220;
+  --panel:#111C36;
+  --ink:#FFFFFF;
+  --muted:#A9B3C7;
+  --accent:#3ECF8E;
+}
 
-  <style>
-    :root{--bg:#0b1220;--panel:#10192b;--ink:#eef3ff;--muted:#a9b3c7;--accent:#6aa1ff}
-    *{box-sizing:border-box}
-    body{margin:0;background:#0b1220;color:var(--ink);font:15px/1.6 system-ui}
-    .wrap{max-width:1100px;margin:40px auto;padding:0 16px}
-    .card{background:var(--panel);border:1px solid #1c2742;border-radius:16px;padding:16px}
-    textarea{width:100%;min-height:140px;background:#0b1326;color:var(--ink);border:1px solid #1b2742;border-radius:12px;padding:14px}
-    button{border:0;border-radius:12px;padding:12px 16px;background:var(--accent);font-weight:700;cursor:pointer}
-    .pill{padding:6px 14px;border-radius:999px;background:#111a31;border:1px solid #1f2e54;color:var(--muted);font-size:12px}
-    .result{background:#0a152e;border:1px dashed #1e356a;border-radius:12px;padding:14px;margin-top:14px}
-    h1,h2{margin-top:28px}
-    ul{padding-left:20px}
-    footer{opacity:.7;margin:40px 0 20px}
-  </style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font:14px/1.6 system-ui,Segoe UI,Roboto;
+}
+
+.wrap{
+  max-width:980px;
+  margin:32px auto;
+  padding:0 16px;
+}
+
+/* ---------- HERO ---------- */
+h1{
+  font-size:28px;
+  margin-bottom:6px;
+  font-weight:700;
+}
+
+.hero-desc{
+  font-size:14px;
+  color:var(--muted);
+  max-width:720px;
+}
+
+/* ---------- CARD ---------- */
+.card{
+  background:var(--panel);
+  border:1px solid #1e2b55;
+  border-radius:14px;
+  padding:14px;
+  margin-top:18px;
+  box-shadow:0 20px 40px rgba(0,0,0,.35);
+}
+
+label.pill{
+  display:inline-block;
+  font-size:12px;
+  color:var(--muted);
+  padding:4px 10px;
+  border:1px solid #24356a;
+  border-radius:999px;
+  margin-bottom:6px;
+}
+
+textarea{
+  width:100%;
+  min-height:110px;
+  background:#0B1326;
+  border:1px solid #24356a;
+  border-radius:12px;
+  padding:12px;
+  font-size:14px;
+  color:var(--ink);
+  resize:vertical;
+}
+
+.actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-top:10px;
+  flex-wrap:wrap;
+}
+
+button{
+  background:var(--accent);
+  color:#062016;
+  border:0;
+  border-radius:10px;
+  padding:8px 18px;
+  font-weight:700;
+  font-size:14px;
+  cursor:pointer;
+}
+
+button:hover{
+  background:#34ba7d;
+  transform:translateY(-1px);
+}
+
+.status{
+  font-size:12px;
+  color:var(--muted);
+  padding:4px 10px;
+  border:1px solid #24356a;
+  border-radius:999px;
+}
+
+.result{
+  margin-top:12px;
+  background:#0A152E;
+  border:1px dashed #2b458f;
+  border-radius:12px;
+  padding:12px;
+  font-size:14px;
+}
+
+/* ---------- CONTENT ---------- */
+section{
+  margin-top:28px;
+}
+
+section h2{
+  font-size:20px;
+  margin-bottom:6px;
+}
+
+section p, section li{
+  color:var(--muted);
+  font-size:14px;
+}
+
+ul{
+  padding-left:18px;
+}
+
+/* ---------- FOOTER ---------- */
+footer{
+  margin:36px 0 20px;
+  font-size:12px;
+  color:var(--muted);
+  opacity:.8;
+}
+
+/* ---------- MOBILE ---------- */
+@media(max-width:600px){
+  h1{font-size:24px}
+}
+</style>
 </head>
 
 <body>
 <div class="wrap">
 
-  <!-- MAIN HEADING -->
-  <h1>Smart Financial Calculator for Students and Professionals</h1>
-  <p style="color:#a9b3c7">
-    MoneyBrain helps you solve financial management problems like EMI, Interest Rate,
-    NPV, IRR, EOQ, WACC, CAGR, Break-even and Investment analysis using plain English input.
-  </p>
+<h1>Smart Financial Calculator for Students and Professionals</h1>
+<p class="hero-desc">
+Solve EMI, Interest Rate, NPV, IRR, EOQ, WACC, CAGR and investment problems using plain English input.
+</p>
 
-  <!-- CALCULATOR -->
-  <div class="card">
-    <label class="pill">Enter your finance question</label>
-    <textarea id="q" placeholder="Example: A person borrowed Rs. 1000 and repays Rs. 94.56 for 12 months. Find interest rate."></textarea>
+<div class="card">
+  <label class="pill">Enter your finance question</label>
+  <textarea id="q" placeholder="Example: A person borrowed Rs. 1000 and repays Rs. 94.56 for 12 months. Find interest rate."></textarea>
 
-    <div style="margin-top:10px">
-      <button onclick="solve()">Solve</button>
-      <span class="pill" id="detected">Detected: –</span>
-    </div>
-
-    <div id="out" class="result"></div>
+  <div class="actions">
+    <button onclick="solve()">Solve</button>
+    <span class="status" id="detected">Detected: –</span>
   </div>
 
-  <!-- SEO CONTENT -->
-  <section>
+  <div class="result" id="out">
+    Paste a finance problem and click Solve.
+  </div>
+</div>
 
-    <h2>What is MoneyBrain?</h2>
-    <p>
-      MoneyBrain is an online financial calculator designed for engineering students,
-      MBA students, and professionals who regularly solve numerical finance problems.
-      Instead of selecting formulas manually, users can paste a finance-related question
-      and get instant answers.
-    </p>
+<section>
+<h2>What is MoneyBrain?</h2>
+<p>
+MoneyBrain is an online financial calculator built for engineering students, MBA students,
+and professionals who regularly solve numerical finance problems.
+</p>
+<p>
+It supports EMI calculation, interest rate detection, NPV, IRR, EOQ, WACC, CAGR,
+break-even analysis, inventory management, and investment decisions.
+</p>
 
-    <p>
-      It supports EMI calculation, interest rate detection, future value, NPV, IRR,
-      EOQ, WACC, CAGR, break-even analysis, inventory management, and investment decisions.
-    </p>
+<h2>Who should use this calculator?</h2>
+<ul>
+  <li>Engineering & MBA students</li>
+  <li>Exam and interview preparation</li>
+  <li>Professionals evaluating loans and investments</li>
+  <li>Anyone learning financial management</li>
+</ul>
+</section>
 
-    <h2>Who should use this financial calculator?</h2>
-    <ul>
-      <li>Engineering and MBA students</li>
-      <li>Students preparing for exams and interviews</li>
-      <li>Professionals evaluating investments and loans</li>
-      <li>Anyone learning financial management concepts</li>
-    </ul>
-
-    <h2>Why MoneyBrain is different</h2>
-    <p>
-      Traditional calculators require users to know the correct formula in advance.
-      MoneyBrain automatically detects the problem type from natural language input
-      and applies the correct financial logic instantly.
-    </p>
-
-    <p>
-      This makes MoneyBrain especially useful for beginners who want to understand
-      finance concepts without memorizing complex formulas.
-    </p>
-
-  </section>
-
-  <!-- USER ENGAGEMENT -->
-  <section>
-    <h2>Try sample finance problems</h2>
-    <ul>
-      <li>Calculate EMI and interest rate</li>
-      <li>Find NPV and IRR of projects</li>
-      <li>Compute EOQ and inventory levels</li>
-      <li>Analyze investments using CAGR and WACC</li>
-    </ul>
-    <p>Try multiple questions to understand how financial formulas work.</p>
-  </section>
-
-  <footer>
-    © 2025 MoneyBrain – Smart Financial Calculator. All Rights Reserved.
-  </footer>
+<footer>
+© 2025 MoneyBrain · Smart Financial Calculator
+</footer>
 
 </div>
 
 <script>
 function solve(){
   const t=document.getElementById("q").value.toLowerCase();
-  let res="Unable to detect problem. Please include keywords like EMI, NPV, IRR, EOQ.";
-  if(t.includes("emi")) res="EMI detected. Formula: EMI = P×r/(1−(1+r)^−n)";
-  if(t.includes("npv")) res="NPV detected. NPV = Σ Cash Flow / (1+r)^t";
-  if(t.includes("irr")) res="IRR detected. IRR is discount rate where NPV = 0";
-  if(t.includes("eoq")) res="EOQ detected. EOQ = √(2DC/H)";
-  if(t.includes("cagr")) res="CAGR detected. CAGR = (FV/PV)^(1/n) − 1";
-  document.getElementById("detected").textContent="Detected: "+res.split(".")[0];
-  document.getElementById("out").textContent=res;
+  let msg="Unable to detect problem. Please include keywords like EMI, NPV, IRR, EOQ.";
+
+  if(t.includes("emi")) msg="EMI detected. EMI = P × r / (1 − (1+r)^−n)";
+  else if(t.includes("npv")) msg="NPV detected. NPV = Σ Cash Flow / (1+r)^t";
+  else if(t.includes("irr")) msg="IRR detected. IRR is the rate where NPV = 0";
+  else if(t.includes("eoq")) msg="EOQ detected. EOQ = √(2DC / H)";
+  else if(t.includes("cagr")) msg="CAGR detected. CAGR = (FV / PV)^(1/n) − 1";
+
+  document.getElementById("detected").textContent="Detected: "+msg.split(".")[0];
+  document.getElementById("out").textContent=msg;
 }
 </script>
 
