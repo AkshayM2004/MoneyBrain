@@ -204,108 +204,104 @@ break-even analysis, inventory management, and investment decisions.
 </div>
 
 <script>
-/* ===================== HELPERS ===================== */
-function num(x){ return x ? Number(x.replace(/,/g,"")) : null }
+/* ================= HELPERS ================= */
+function clean(n){ return n ? Number(n.replace(/,/g,"")) : null }
 
 function loanAmount(t){
-  const m=t.match(/rs\.?\s*([\d,]+)/i);
-  return m?num(m[1]):null
-}
-
-function interestRate(t){
-  const m=t.match(/(\d+(\.\d+)?)\s*%/);
-  return m?Number(m[1]):null
+  const m=t.match(/borrowed\s+rs\.?\s*([\d,]+)/i) ||
+           t.match(/rs\.?\s*([\d,]+)/i);
+  return m?clean(m[1]):null;
 }
 
 function years(t){
   const m=t.match(/(\d+)\s*years?/i);
-  return m?Number(m[1]):null
+  return m?Number(m[1]):null;
 }
 
 function months(t){
   const m=t.match(/(\d+)\s*months?/i);
-  return m?Number(m[1]):null
+  return m?Number(m[1]):null;
 }
 
+function interestRate(t){
+  const m=t.match(/(\d+(\.\d+)?)\s*%/);
+  return m?Number(m[1]):null;
+}
+
+/* EMI can appear BEFORE or AFTER Rs */
 function emiAmount(t){
-  const m=t.match(/rs\.?\s*([\d,]+)\s*(per month|monthly|instalment|installment)/i);
-  return m?num(m[1]):null
+  const m =
+    t.match(/instalments?\s+of\s+rs\.?\s*([\d,.]+)/i) ||
+    t.match(/rs\.?\s*([\d,.]+)\s*(monthly|per month|instalment)/i);
+  return m?clean(m[1]):null;
 }
 
-/* ===================== CORE ===================== */
+/* ================= SOLVER ================= */
 function solve(){
-  const t=document.getElementById("q").value.toLowerCase();
-
+  const t=document.getElementById("q").value.toLowerCase().trim();
   let detected="Unable to detect problem";
-  let out="Please enter a finance problem.";
+  let out="";
+
+  if(!t){
+    return update(detected,
+      "Input is empty.\n\nExample:\nRs. 1000 repaid in 12 instalments of Rs. 94.56. Find interest rate.");
+  }
 
   const P=loanAmount(t);
-  const R=interestRate(t);
-  const Y=years(t);
-  const M=months(t);
   const EMI=emiAmount(t);
-  const n=M || (Y?Y*12:null);
+  const R=interestRate(t);
+  const n=months(t) || (years(t)?years(t)*12:null);
 
-  /* ---------- VALIDATION ---------- */
-  if(!t.trim()){
-    out="Input is empty. Example:\nA loan of Rs. 5,00,000 is taken for 5 years at 10%. Find EMI.";
+  /* ========= CASE 1: INTEREST RATE FROM EMI ========= */
+  if(P && EMI && n && (t.includes("interest") || t.includes("rate"))){
+    detected="Interest Rate from EMI";
+
+    let r=0.01;
+    for(let i=0;i<3000;i++){
+      r=r-(P*r/(1-Math.pow(1+r,-n))-EMI)/P;
+    }
+
+    const monthly=(r*100).toFixed(2);
+    const annual=( (Math.pow(1+r,12)-1)*100 ).toFixed(2);
+
+    out=
+      "STEP-BY-STEP SOLUTION (INTEREST RATE)\n\n"+
+      "Loan Amount = ₹"+P+"\n"+
+      "Monthly Instalment = ₹"+EMI+"\n"+
+      "Time = "+n+" months\n\n"+
+      "Monthly Interest Rate ≈ "+monthly+"%\n"+
+      "Annual Effective Interest Rate ≈ "+annual+"%";
+
     return update(detected,out);
   }
 
-  /* ---------- CASE 1: EMI CALCULATION ---------- */
-  if(t.includes("emi") && R && P && n){
+  /* ========= CASE 2: EMI CALCULATION ========= */
+  if(P && R && n){
     detected="EMI Calculation";
-
     const r=R/100/12;
     const emi=(P*r*Math.pow(1+r,n))/(Math.pow(1+r,n)-1);
 
     out=
-    "STEP-BY-STEP EMI SOLUTION\n\n"+
-    "Loan Amount = ₹"+P.toLocaleString()+"\n"+
-    "Interest Rate = "+R+"% p.a.\n"+
-    "Time = "+n+" months\n\n"+
-    "EMI Formula:\n"+
-    "EMI = P × r × (1+r)^n / ((1+r)^n − 1)\n\n"+
-    "EMI ≈ ₹"+emi.toFixed(0);
+      "STEP-BY-STEP SOLUTION (EMI)\n\n"+
+      "Loan Amount = ₹"+P.toLocaleString()+"\n"+
+      "Interest Rate = "+R+"% p.a.\n"+
+      "Time = "+n+" months\n\n"+
+      "EMI ≈ ₹"+emi.toFixed(0);
 
     return update(detected,out);
   }
 
-  /* ---------- CASE 2: INTEREST RATE FROM EMI ---------- */
-  if((t.includes("interest rate")||t.includes("rate of interest")) && P && EMI && n){
-    detected="Interest Rate from EMI";
-
-    let r=0.01;
-    for(let i=0;i<2000;i++){
-      r=r-(P*r/(1-Math.pow(1+r,-n))-EMI)/P;
-    }
-
-    const monthly=r*100;
-    const annual=(Math.pow(1+r,12)-1)*100;
-
-    out=
-    "STEP-BY-STEP INTEREST RATE SOLUTION\n\n"+
-    "Loan Amount = ₹"+P+"\n"+
-    "EMI = ₹"+EMI+"\n"+
-    "Months = "+n+"\n\n"+
-    "Monthly Rate ≈ "+monthly.toFixed(2)+"%\n"+
-    "Annual Effective Rate ≈ "+annual.toFixed(2)+"%";
-
-    return update(detected,out);
-  }
-
-  /* ---------- ERROR HANDLING ---------- */
-  if(t.includes("emi")){
-    detected="EMI Problem";
-    out="Missing values.\n\nRequired:\n• Loan amount (Rs)\n• Interest rate (%) OR EMI\n• Time (years or months)";
-    return update(detected,out);
-  }
-
-  /* ---------- FALLBACK ---------- */
+  /* ========= GUIDED ERROR ========= */
+  detected="EMI / Interest Rate Problem";
   out=
-  "Unable to solve this input.\n\nExamples you can try:\n"+
-  "1) A loan of Rs. 5,00,000 for 5 years at 10%. Find EMI.\n"+
-  "2) Rs. 1000 repaid in 12 instalments of Rs. 94.56. Find interest rate.";
+    "Unable to extract required values.\n\n"+
+    "Please ensure your question includes:\n"+
+    "• Loan amount (Rs)\n"+
+    "• EMI OR Interest rate\n"+
+    "• Time (months or years)\n\n"+
+    "Examples:\n"+
+    "1) Rs. 1000 repaid in 12 instalments of Rs. 94.56. Find interest rate.\n"+
+    "2) Rs. 5,00,000 loan for 5 years at 10%. Find EMI.";
 
   update(detected,out);
 }
@@ -322,8 +318,10 @@ function update(d,o){
 
 
 
+
 </body>
 </html>
+
 
 
 
