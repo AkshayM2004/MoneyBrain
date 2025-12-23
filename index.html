@@ -204,111 +204,113 @@ break-even analysis, inventory management, and investment decisions.
 </div>
 
 <script>
-/* ================= HELPERS ================= */
+/* ===================== HELPERS ===================== */
 function clean(n){ return n ? Number(n.replace(/,/g,"")) : null }
 
 function loanAmount(t){
-  const m=t.match(/borrowed\s+rs\.?\s*([\d,]+)/i) ||
-           t.match(/rs\.?\s*([\d,]+)/i);
-  return m?clean(m[1]):null;
+  const m = t.match(/borrowed\s+rs\.?\s*([\d,]+)/i) ||
+            t.match(/rs\.?\s*([\d,]+)/i);
+  return m ? clean(m[1]) : null;
 }
 
-function years(t){
-  const m=t.match(/(\d+)\s*years?/i);
-  return m?Number(m[1]):null;
-}
-
-function months(t){
-  const m=t.match(/(\d+)\s*months?/i);
-  return m?Number(m[1]):null;
-}
-
-function interestRate(t){
-  const m=t.match(/(\d+(\.\d+)?)\s*%/);
-  return m?Number(m[1]):null;
-}
-
-/* EMI can appear BEFORE or AFTER Rs */
 function emiAmount(t){
   const m =
     t.match(/instalments?\s+of\s+rs\.?\s*([\d,.]+)/i) ||
-    t.match(/rs\.?\s*([\d,.]+)\s*(monthly|per month|instalment)/i);
-  return m?clean(m[1]):null;
+    t.match(/rs\.?\s*([\d,.]+)\s*(per month|monthly|instalment)/i);
+  return m ? clean(m[1]) : null;
 }
 
-/* ================= SOLVER ================= */
+function interestRate(t){
+  const m = t.match(/(\d+(\.\d+)?)\s*%/);
+  return m ? Number(m[1]) : null;
+}
+
+function months(t){
+  const m = t.match(/(\d+)\s*months?/i);
+  return m ? Number(m[1]) : null;
+}
+
+function years(t){
+  const m = t.match(/(\d+)\s*years?/i);
+  return m ? Number(m[1]) : null;
+}
+
+/* ===================== SOLVER ===================== */
 function solve(){
-  const t=document.getElementById("q").value.toLowerCase().trim();
-  let detected="Unable to detect problem";
-  let out="";
+  const t = document.getElementById("q").value.toLowerCase().trim();
+  let detected = "Unable to detect problem";
+  let out = "";
 
   if(!t){
     return update(detected,
       "Input is empty.\n\nExample:\nRs. 1000 repaid in 12 instalments of Rs. 94.56. Find interest rate.");
   }
 
-  const P=loanAmount(t);
-  const EMI=emiAmount(t);
-  const R=interestRate(t);
-  const n=months(t) || (years(t)?years(t)*12:null);
+  const P = loanAmount(t);
+  const EMI = emiAmount(t);
+  const R = interestRate(t);
+  const n = months(t) || (years(t) ? years(t) * 12 : null);
 
   /* ========= CASE 1: INTEREST RATE FROM EMI ========= */
-  if(P && EMI && n && (t.includes("interest") || t.includes("rate"))){
-    detected="Interest Rate from EMI";
+  if (P && EMI && n && !R) {
+    detected = "Interest Rate from EMI";
 
-    let r=0.01;
-    for(let i=0;i<3000;i++){
-      r=r-(P*r/(1-Math.pow(1+r,-n))-EMI)/P;
+    let r = 0.01;
+    for (let i = 0; i < 4000; i++) {
+      r = r - (P * r / (1 - Math.pow(1 + r, -n)) - EMI) / P;
     }
 
-    const monthly=(r*100).toFixed(2);
-    const annual=( (Math.pow(1+r,12)-1)*100 ).toFixed(2);
+    const monthly = (r * 100).toFixed(2);
+    const annual = ((Math.pow(1 + r, 12) - 1) * 100).toFixed(2);
 
-    out=
-      "STEP-BY-STEP SOLUTION (INTEREST RATE)\n\n"+
-      "Loan Amount = ₹"+P+"\n"+
-      "Monthly Instalment = ₹"+EMI+"\n"+
-      "Time = "+n+" months\n\n"+
-      "Monthly Interest Rate ≈ "+monthly+"%\n"+
-      "Annual Effective Interest Rate ≈ "+annual+"%";
+    out =
+      "STEP-BY-STEP SOLUTION (INTEREST RATE)\n\n" +
+      "Loan Amount = ₹" + P + "\n" +
+      "Monthly Instalment = ₹" + EMI + "\n" +
+      "Time = " + n + " months\n\n" +
+      "Monthly Interest Rate ≈ " + monthly + "%\n" +
+      "Annual Effective Interest Rate ≈ " + annual + "%";
 
-    return update(detected,out);
+    return update(detected, out);
   }
 
   /* ========= CASE 2: EMI CALCULATION ========= */
-  if(P && R && n){
-    detected="EMI Calculation";
-    const r=R/100/12;
-    const emi=(P*r*Math.pow(1+r,n))/(Math.pow(1+r,n)-1);
+  if (P && R && n) {
+    detected = "EMI Calculation";
 
-    out=
-      "STEP-BY-STEP SOLUTION (EMI)\n\n"+
-      "Loan Amount = ₹"+P.toLocaleString()+"\n"+
-      "Interest Rate = "+R+"% p.a.\n"+
-      "Time = "+n+" months\n\n"+
-      "EMI ≈ ₹"+emi.toFixed(0);
+    const r = R / 100 / 12;
+    const emi =
+      (P * r * Math.pow(1 + r, n)) /
+      (Math.pow(1 + r, n) - 1);
 
-    return update(detected,out);
+    out =
+      "STEP-BY-STEP SOLUTION (EMI)\n\n" +
+      "Loan Amount = ₹" + P.toLocaleString() + "\n" +
+      "Interest Rate = " + R + "% p.a.\n" +
+      "Time = " + n + " months\n\n" +
+      "EMI ≈ ₹" + emi.toFixed(0);
+
+    return update(detected, out);
   }
 
   /* ========= GUIDED ERROR ========= */
-  detected="EMI / Interest Rate Problem";
-  out=
-    "Unable to extract required values.\n\n"+
-    "Please ensure your question includes:\n"+
-    "• Loan amount (Rs)\n"+
-    "• EMI OR Interest rate\n"+
-    "• Time (months or years)\n\n"+
-    "Examples:\n"+
-    "1) Rs. 1000 repaid in 12 instalments of Rs. 94.56. Find interest rate.\n"+
+  detected = "EMI / Interest Rate Problem";
+  out =
+    "Unable to extract required values.\n\n" +
+    "Please ensure your question includes:\n" +
+    "• Loan amount (Rs)\n" +
+    "• EMI OR Interest rate\n" +
+    "• Time (months or years)\n\n" +
+    "Examples:\n" +
+    "1) Rs. 1000 repaid in 12 instalments of Rs. 94.56. Find interest rate.\n" +
     "2) Rs. 5,00,000 loan for 5 years at 10%. Find EMI.";
 
-  update(detected,out);
+  update(detected, out);
 }
 
 function update(d,o){
-  document.getElementById("detected").textContent="Detected: "+d;
-  document.getElementById("out").textContent=o;
+  document.getElementById("detected").textContent = "Detected: " + d;
+  document.getElementById("out").textContent = o;
 }
 </script>
 
@@ -319,8 +321,10 @@ function update(d,o){
 
 
 
+
 </body>
 </html>
+
 
 
 
