@@ -222,28 +222,8 @@ function getRate(text) {
   return m ? Number(m[1]) : null;
 }
 function getEMI(text) {
-  const m = text.match(/rs\.?\s*([\d,.]+)\s*(per month|monthly|instalment)/i);
+  const m = text.match(/rs\.?\s*([\d,.]+)\s*(per month|monthly|instalment|installment)/i);
   return m ? Number(m[1].replace(/,/g, "")) : null;
-}
-function extractCashFlows(text) {
-  return (text.match(/-?\d[\d,]*/g) || []).map(x =>
-    Number(x.replace(/,/g, ""))
-  );
-}
-
-/* ---------- IRR FUNCTION ---------- */
-function calculateIRR(flows) {
-  let rate = 0.1;
-  for (let i = 0; i < 1000; i++) {
-    let npv = 0;
-    let dnpv = 0;
-    for (let t = 0; t < flows.length; t++) {
-      npv += flows[t] / Math.pow(1 + rate, t);
-      dnpv -= t * flows[t] / Math.pow(1 + rate, t + 1);
-    }
-    rate = rate - npv / dnpv;
-  }
-  return rate;
 }
 
 /* ---------- MAIN SOLVER ---------- */
@@ -252,93 +232,63 @@ function solve() {
   let detected = "Unable to detect problem";
   let out = "Unable to detect problem.";
 
-  /* ========== EMI CALCULATION ========== */
-  if (text.includes("find the emi")) {
+  const P = getLoanAmount(text);
+  const years = getYears(text);
+  const months = getMonths(text);
+  const rate = getRate(text);
+  const EMI = getEMI(text);
+  const n = months || (years ? years * 12 : null);
+
+  /* ========= CASE 1: FIND EMI ========= */
+  if (text.includes("find the emi") && P && rate && n) {
     detected = "EMI Calculation";
 
-    const P = getLoanAmount(text);
-    const years = getYears(text);
-    const rate = getRate(text);
+    const r = rate / 100 / 12;
+    const emi =
+      (P * r * Math.pow(1 + r, n)) /
+      (Math.pow(1 + r, n) - 1);
 
-    if (P && years && rate) {
-      const n = years * 12;
-      const r = rate / 100 / 12;
-      const emi =
-        (P * r * Math.pow(1 + r, n)) /
-        (Math.pow(1 + r, n) - 1);
-
-      out =
-        "STEP-BY-STEP SOLUTION (EMI)\n\n" +
-        "Given:\n" +
-        "Loan Amount (P) = ₹" + P.toLocaleString() + "\n" +
-        "Rate = " + rate + "% p.a.\n" +
-        "Time = " + years + " years = " + n + " months\n\n" +
-        "Formula:\n" +
-        "EMI = P × r × (1+r)^n / ((1+r)^n − 1)\n\n" +
-        "Calculation:\n" +
-        "EMI ≈ ₹" + emi.toFixed(0);
-    }
+    out =
+      "STEP-BY-STEP SOLUTION (EMI)\n\n" +
+      "Loan Amount = ₹" + P.toLocaleString() + "\n" +
+      "Rate = " + rate + "% p.a.\n" +
+      "Time = " + n + " months\n\n" +
+      "EMI Formula:\n" +
+      "EMI = P × r × (1+r)^n / ((1+r)^n − 1)\n\n" +
+      "EMI ≈ ₹" + emi.toFixed(0);
   }
 
-  /* ========== INTEREST RATE FROM EMI ========== */
-  else if (text.includes("compute the annual interest rate")) {
+  /* ========= CASE 2: FIND INTEREST RATE ========= */
+  else if (
+    (text.includes("interest rate") || text.includes("rate of interest")) &&
+    P && EMI && n
+  ) {
     detected = "Interest Rate from EMI";
 
-    const P = getLoanAmount(text);
-    const EMI = getEMI(text);
-    const n = getMonths(text) || getYears(text) * 12;
-
-    if (P && EMI && n) {
-      let r = 0.01;
-      for (let i = 0; i < 1000; i++) {
-        r = r - (
-          P * r / (1 - Math.pow(1 + r, -n)) - EMI
-        ) / P;
-      }
-      const annual = (Math.pow(1 + r, 12) - 1) * 100;
-
-      out =
-        "STEP-BY-STEP SOLUTION (Interest Rate)\n\n" +
-        "Given:\n" +
-        "Loan Amount = ₹" + P + "\n" +
-        "EMI = ₹" + EMI + "\n" +
-        "Months = " + n + "\n\n" +
-        "Monthly rate ≈ " + (r * 100).toFixed(2) + "%\n" +
-        "Annual effective rate ≈ " + annual.toFixed(2) + "%";
+    let r = 0.01;
+    for (let i = 0; i < 1000; i++) {
+      r = r - (
+        P * r / (1 - Math.pow(1 + r, -n)) - EMI
+      ) / P;
     }
-  }
 
-  /* ========== NPV ========== */
-  else if (text.includes("npv")) {
-    detected = "NPV Calculation";
-
-    const flows = extractCashFlows(text);
-    const rate = getRate(text) / 100;
-
-    let npv = 0;
-    flows.forEach((c, t) => {
-      npv += c / Math.pow(1 + rate, t);
-    });
+    const monthly = r * 100;
+    const annual = (Math.pow(1 + r, 12) - 1) * 100;
 
     out =
-      "STEP-BY-STEP SOLUTION (NPV)\n\n" +
-      "Cash Flows: " + flows.join(", ") + "\n" +
-      "Discount Rate = " + (rate * 100) + "%\n\n" +
-      "NPV = ₹" + npv.toFixed(0) + "\n" +
-      (npv > 0 ? "Decision: ACCEPT" : "Decision: REJECT");
+      "STEP-BY-STEP SOLUTION (Interest Rate)\n\n" +
+      "Loan Amount = ₹" + P + "\n" +
+      "EMI = ₹" + EMI + "\n" +
+      "Months = " + n + "\n\n" +
+      "Monthly Interest Rate ≈ " + monthly.toFixed(2) + "%\n" +
+      "Annual Effective Interest Rate ≈ " + annual.toFixed(2) + "%";
   }
 
-  /* ========== IRR ========== */
-  else if (text.includes("irr")) {
-    detected = "IRR Calculation";
-
-    const flows = extractCashFlows(text);
-    const irr = calculateIRR(flows) * 100;
-
+  else {
+    detected = "EMI / Interest Rate Problem";
     out =
-      "STEP-BY-STEP SOLUTION (IRR)\n\n" +
-      "Cash Flows: " + flows.join(", ") + "\n\n" +
-      "IRR ≈ " + irr.toFixed(2) + "%";
+      "EMI problem detected, but unable to extract values.\n" +
+      "Please ensure loan amount, EMI or interest rate, and time are clearly mentioned.";
   }
 
   document.getElementById("detected").textContent =
@@ -351,8 +301,10 @@ function solve() {
 
 
 
+
 </body>
 </html>
+
 
 
 
