@@ -204,31 +204,42 @@ break-even analysis, inventory management, and investment decisions.
 </div>
 
 <script>
-function extractNumbers(text) {
-  return text.match(/[\d,.]+/g)?.map(x => Number(x.replace(/,/g, ""))) || [];
+function getLoanAmount(text) {
+  const match = text.match(/rs\.?\s*([\d,]+)/i);
+  return match ? Number(match[1].replace(/,/g, "")) : null;
+}
+
+function getYears(text) {
+  const match = text.match(/(\d+)\s*years?/i);
+  return match ? Number(match[1]) : null;
+}
+
+function getRate(text) {
+  const match = text.match(/(\d+(\.\d+)?)\s*%/);
+  return match ? Number(match[1]) : null;
 }
 
 function solve() {
   const text = document.getElementById("q").value.toLowerCase();
-  const nums = extractNumbers(text);
 
   let detected = "Unable to detect problem";
   let output = "Unable to detect problem.";
 
-  /* ========== EMI CALCULATION ========== */
+  /* ========= EMI DETECTION ========= */
   if (
     text.includes("emi") ||
-    text.includes("monthly") ||
-    text.includes("instalment") ||
-    text.includes("installment")
+    text.includes("loan") ||
+    text.includes("borrowed")
   ) {
     detected = "EMI / Interest Rate Problem";
 
-    if (nums.length >= 3 && text.includes("year")) {
-      const P = nums[0];          // Loan
-      const rate = nums[2] / 100; // Annual rate
-      const n = nums[1] * 12;     // Years → months
-      const r = rate / 12;
+    const P = getLoanAmount(text);
+    const years = getYears(text);
+    const rate = getRate(text);
+
+    if (P && years && rate) {
+      const n = years * 12;
+      const r = rate / 100 / 12;
 
       const emi =
         (P * r * Math.pow(1 + r, n)) /
@@ -237,8 +248,8 @@ function solve() {
       output =
         "Detected EMI problem.\n\n" +
         "Loan Amount (P): ₹" + P.toLocaleString() + "\n" +
-        "Annual Interest Rate: " + nums[2] + "%\n" +
-        "Tenure: " + nums[1] + " years (" + n + " months)\n\n" +
+        "Annual Interest Rate: " + rate + "%\n" +
+        "Tenure: " + years + " years (" + n + " months)\n\n" +
         "EMI Formula:\n" +
         "EMI = P × r × (1+r)^n / ((1+r)^n − 1)\n\n" +
         "Calculated EMI:\n" +
@@ -258,7 +269,9 @@ function solve() {
 
 
 
+
 </body>
 </html>
+
 
 
